@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>服薬チェック</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      font-size: 18px;
+    }
+    .done {
+      color: green;
+      font-weight: bold;
+    }
+    .item {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1 id="date"></h1>
+
+<div class="item">
+  <label>
+    <input type="checkbox" id="morning">
+    朝の薬
+  </label>
+  <span id="status_morning"></span>
+</div>
+
+<div class="item">
+  <label>
+    <input type="checkbox" id="noon">
+    昼の薬
+  </label>
+  <span id="status_noon"></span>
+</div>
+
+<div class="item">
+  <label>
+    <input type="checkbox" id="evening">
+    夕の薬
+  </label>
+  <span id="status_evening"></span>
+</div>
+
+<script>
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById("date").textContent = today;
+
+  const times = ["morning", "noon", "evening"];
+
+  times.forEach(time => {
+    const checkEl = document.getElementById(time);
+    const statusEl = document.getElementById("status_" + time);
+    const key = "medicine_" + today + "_" + time;
+
+    // 保存状態の読み込み
+    if (localStorage.getItem(key) === "done") {
+      checkEl.checked = true;
+      statusEl.textContent = " ✔ 記録済み";
+      statusEl.className = "done";
+    }
+
+    // チェック変更時
+    checkEl.addEventListener("change", () => {
+      if (checkEl.checked) {
+        localStorage.setItem(key, "done");
+        statusEl.textContent = " ✔ 記録しました";
+        statusEl.className = "done";
+      } else {
+        localStorage.removeItem(key);
+        statusEl.textContent = "";
+        statusEl.className = "";
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

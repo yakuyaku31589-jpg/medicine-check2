@@ -16,6 +16,12 @@
     .item {
       margin-bottom: 10px;
     }
+    hr {
+      margin: 30px 0;
+    }
+    .history {
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -23,60 +29,83 @@
 <h1 id="date"></h1>
 
 <div class="item">
-  <label>
-    <input type="checkbox" id="morning">
-    朝の薬
-  </label>
-  <span id="status_morning"></span>
+  <label><input type="checkbox" id="morning"> 朝の薬</label>
+</div>
+<div class="item">
+  <label><input type="checkbox" id="noon"> 昼の薬</label>
+</div>
+<div class="item">
+  <label><input type="checkbox" id="evening"> 夕の薬</label>
 </div>
 
-<div class="item">
-  <label>
-    <input type="checkbox" id="noon">
-    昼の薬
-  </label>
-  <span id="status_noon"></span>
-</div>
+<hr>
 
-<div class="item">
-  <label>
-    <input type="checkbox" id="evening">
-    夕の薬
-  </label>
-  <span id="status_evening"></span>
-</div>
+<h2>過去7日間の記録</h2>
+<div id="history" class="history"></div>
 
 <script>
-  const today = new Date().toISOString().slice(0, 10);
-  document.getElementById("date").textContent = today;
-
   const times = ["morning", "noon", "evening"];
+  const labels = {
+    morning: "朝",
+    noon: "昼",
+    evening: "夕"
+  };
 
+  const weekdays = ["日", "月", "火", "水", "木", "金", "土"];
+
+  // 今日の日付と曜日
+  const today = new Date();
+  const todayStr = today.toISOString().slice(0, 10);
+  const todayWeekday = weekdays[today.getDay()];
+  document.getElementById("date").textContent =
+    `${todayStr}（${todayWeekday}）`;
+
+  // 今日のチェック処理
   times.forEach(time => {
     const checkEl = document.getElementById(time);
-    const statusEl = document.getElementById("status_" + time);
-    const key = "medicine_" + today + "_" + time;
+    const key = `medicine_${todayStr}_${time}`;
 
-    // 保存状態の読み込み
     if (localStorage.getItem(key) === "done") {
       checkEl.checked = true;
-      statusEl.textContent = " ✔ 記録済み";
-      statusEl.className = "done";
     }
 
-    // チェック変更時
     checkEl.addEventListener("change", () => {
       if (checkEl.checked) {
         localStorage.setItem(key, "done");
-        statusEl.textContent = " ✔ 記録しました";
-        statusEl.className = "done";
       } else {
         localStorage.removeItem(key);
-        statusEl.textContent = "";
-        statusEl.className = "";
       }
+      renderHistory();
     });
   });
+
+  // 過去7日分表示
+  function renderHistory() {
+    const historyEl = document.getElementById("history");
+    historyEl.innerHTML = "";
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(today.getDate() - i);
+
+      const dateStr = d.toISOString().slice(0, 10);
+      const weekday = weekdays[d.getDay()];
+
+      let line = `${dateStr}（${weekday}） : `;
+
+      const results = times.map(time => {
+        const key = `medicine_${dateStr}_${time}`;
+        return localStorage.getItem(key) === "done"
+          ? `${labels[time]}✔`
+          : `${labels[time]}×`;
+      });
+
+      line += results.join(" / ");
+      historyEl.innerHTML += `<div>${line}</div>`;
+    }
+  }
+
+  renderHistory();
 </script>
 
 </body>
